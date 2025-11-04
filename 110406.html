@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北臺通勤權衡分析 (2010-2020)</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    
+    <style>
+        /* 基礎設定 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            line-height: 1.8;
+            background-color: #f8f9fa;
+            color: #212529;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 主要容器 */
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px 50px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+        }
+
+        /* 標題 */
+        header h1 {
+            color: #0056b3;
+            text-align: center;
+            border-bottom: 3px solid #0056b3;
+            padding-bottom: 20px;
+            font-size: 2.4em;
+            margin-bottom: 20px;
+        }
+        
+        header p.subtitle {
+            text-align: center;
+            font-size: 1.25em;
+            color: #6c757d;
+            margin-top: -15px;
+            font-weight: 300;
+        }
+
+        /* 區塊標題 (H2) */
+        h2 {
+            color: #004085;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-top: 45px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+        }
+        
+        h2 .icon {
+            margin-right: 15px;
+            color: #0056b3;
+        }
+
+        /* 子標題 (H3) */
+        h3 {
+            color: #1971c2;
+            font-size: 1.4em;
+            margin-top: 30px;
+            border-left: 4px solid #1971c2;
+            padding-left: 10px;
+        }
+
+        /* 內文 */
+        p {
+            font-size: 1.05em;
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        /* 彈性的圖文區塊 */
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-top: 30px;
+            align-items: flex-start;
+        }
+
+        .flex-item {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .flex-item-full {
+            flex-basis: 100%;
+        }
+
+        /* 圖表容器 */
+        .chart-container {
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            margin-top: 20px;
+        }
+
+        /* 結論高亮 */
+        .conclusion-box {
+            background-color: #fff9db;
+            border-left: 6px solid #f9ca24;
+            padding: 25px;
+            margin-top: 30px;
+            border-radius: 5px;
+        }
+        .conclusion-box p {
+            font-size: 1.1em;
+            font-weight: 500;
+            margin: 0;
+            color: #594b00;
+        }
+        .conclusion-box .lead {
+            font-size: 1.25em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* KPI 卡片總覽 */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .kpi-card {
+            background: #e9f5ff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            border-left: 4px solid #0056b3;
+        }
+
+        .kpi-card h4 {
+            margin: 0 0 6px;
+            font-size: 1.05em;
+            color: #004085;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #003566;
+        }
+
+        .kpi-card .kpi-note {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        /* 資料表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table thead {
+            background-color: #f1f3f5;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px 10px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+
+        .data-table td.label-cell {
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .table-caption {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        /* 資訊提示框 */
+        .info-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 18px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .info-box p {
+            margin-bottom: 8px;
+            font-size: 0.98em;
+        }
+
+        /* 正負趨勢標示 */
+        .trend-positive { color: #28a745; font-weight: 600; }
+        .trend-negative { color: #dc3545; font-weight: 600; }
+
+        /* 頁腳 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.95em;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+        }
+
+        /* RWD 微調 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 18px;
+            }
+            header h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.7em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>北臺通勤權衡的十年變局</h1>
+        <p class="subtitle">一場關於居住、就業與發展代價的動態分析 (2010-2020)</p>
+    </header>
+
+    <main>
+        <!-- 序章 -->
+        <section id="intro">
+            <h2><i class="fas fa-search-location icon"></i>序章：北臺的「空間權衡」難題</h2>
+            <p>
+                本研究的核心是探討北臺居民在「居住品質」與「通勤成本」之間的權衡。我們將比較 2010 年 (民國99年) 至 2020 年 (民國109年) 的
+                <b>完整歷年數據</b>，以回答一個核心問題：<b>這十年的通勤權衡是變得更容易，還是更困難了？</b>
+            </p>
+            <p>
+                首先，我們觀察到顯著的人口外溢趨勢。2010 至 2020 年，臺北市人口僅增長 1.7%，而新竹縣增長了 11.2%，桃園市增長了 13.3%。這證實了人口由核心向外圍擴散的趨勢，也是通勤產生的前提。
+            </p>
+
+            <h3>十年關鍵指標速覽</h3>
+            <p style="font-size:0.98em; color:#6c757d; margin-top:-5px;">
+                下方三個指標用最簡單的方式，濃縮這十年「空間紅利、醫療落差、交通代價」的變化。更深入的交叉驗證與補充佐證，整理在第四章「深度數據挖掘」。
+            </p>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <h4><i class="fas fa-ruler-combined"></i>空間紅利差距 (109 年)</h4>
+                    <div class="kpi-value" id="kpi-space-gap">--</div>
+                    <div class="kpi-note">苗栗縣 vs 新北市，每人平均居住建坪差距。</div>
+                </div>
+                <div class="kpi-card">
+                    <h4><i class="fas fa-user-md"></i>醫療資源落差 (109 年)</h4>
+                    <div class="kpi-value" id="kpi-doctor-gap">--</div>
+                    <div class="kpi-note">臺北市 vs 苗栗縣，每萬人西醫人數差距。</div>
+                </div>
+                <div class="kpi-card">
+                    <h4><i class="fas fa-car-side"></i>通勤外溢區交通成長 (99→109)</h4>
+                    <div class="kpi-value" id="kpi-car-growth">--</div>
+                    <div class="kpi-note">新竹縣汽車持有率的十年增幅（輛 / 千人）。</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 第一章 -->
+        <section id="chapter-1">
+            <h2><i class="fas fa-home icon"></i>第一章：拉力 (The Pull) - 居住紅利的誘惑</h2>
+            <p>
+                <b>分析主軸：</b>探討人口為何願意忍受通勤，離開臺北 / 新北？答案是追求<b>更低的成本</b>與<b>更大的空間</b>。
+            </p>
+            
+            <div class="flex-container">
+                <div class="flex-item">
+                    <h3><i class="fas fa-money-bill-wave" style="color:#dc3545;"></i> 成本面：高昂的核心區負擔</h3>
+                    <p>
+                        <code>住宅支出佔家庭支出百分比</code>顯示，臺北市的居住負擔十年來始終維持在 21% 以上，最高曾達 24.4%，持續作為將人口向外「推」的主要力量。
+                    </p>
+                </div>
+                <div class="flex-item">
+                    <h3><i class="fas fa-expand-arrows-alt" style="color:#17a2b8;"></i> 空間面：顯著擴大的紅利</h3>
+                    <p>
+                        <code>每人平均建坪</code>則顯示了外溢的「拉力」。2020 年，苗栗縣民（20.10 坪）的平均空間幾乎是新北市民（11.31 坪）的兩倍。
+                    </p>
+                </div>
+            </div>
+
+            <div class="chart-container flex-item-full">
+                <canvas id="spaceTrendChart" height="150"></canvas>
+            </div>
+            <div class="chart-container flex-item-full">
+                <canvas id="costTrendChart" height="150"></canvas>
+            </div>
+
+            <h3>十年變化：各縣市「空間紅利」的增幅</h3>
+            <p style="font-size:0.98em; color:#495057;">
+                下圖與下表將 99 年與 109 年做直接比較，凸顯哪一些縣市在這十年間讓居民實際取得的居住空間成長最多。
+            </p>
+            <div class="chart-container flex-item-full">
+                <canvas id="spaceChangeChart" height="150"></canvas>
+            </div>
+            <div class="chart-container flex-item-full">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>縣市</th>
+                            <th>99 年 (坪 / 人)</th>
+                            <th>109 年 (坪 / 人)</th>
+                            <th>變化 (109 − 99)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="spaceTableBody"></tbody>
+                </table>
+                <p class="table-caption">
+                    註：變化值為 109 年減去 99 年的差異，正值代表「每人平均居住建坪」增加，象徵空間紅利擴大。
+                </p>
+            </div>
+        </section>
+
+        <!-- 第二章 -->
+        <section id="chapter-2">
+            <h2><i class="fas fa-industry icon"></i>第二章：目的地 (The Destination) - 僵固的就業核心</h2>
+            <p>
+                <b>分析主軸：</b>既然人們搬出去了，為什麼還要通勤？因為<b>高薪工作機會沒有跟著搬</b>。北臺的就業結構呈現高度集中且穩定的「多核心」型態。
+            </p>
+
+            <div class="flex-container">
+                <div class="flex-item" style="flex: 2;">
+                    <h3>臺北 (服務業核心)</h3>
+                    <p>
+                        十年來，臺北市的 <code>三級產業</code>（金融、資訊、服務業）佔比始終維持在 80% 以上（80.7% → 81.3%）。同時，它擁有最多的大學校數（23 → 24 所），持續吸引知識型人才。
+                    </p>
+                </div>
+                <div class="flex-item" style="flex: 2;">
+                    <h3>桃竹苗 (科技製造業核心)</h3>
+                    <p>
+                        桃園、新竹、苗栗的 <code>次級產業</code>（製造、高科技）佔比始終維持在 40% 以上的超高水平。特別是新竹市的 <code>科學園區面積</code> 持續擴展（632 → 723.8 公頃），強化了其作為「科技通勤目的地」的地位。
+                    </p>
+                </div>
+            </div>
+            <p>
+                <b>本章小結：</b> 居住地與工作地的「空間不匹配」(Spatial Mismatch) 依然存在，迫使居民必須進行長距離、跨縣市的通勤。
+            </p>
+        </section>
+
+        <!-- 第三章 -->
+        <section id="chapter-3">
+            <h2><i class="fas fa-car-crash icon"></i>第三章：代價 (The Cost) - 失衡的發展天平</h2>
+            <p>
+                <b>分析主軸：</b>居民獲得了「空間紅利」，也接受了「通勤必要性」，那麼他們付出的<b>實際代價</b>是什麼？數據顯示，這個代價在十年內<b>急劇升高</b>。
+            </p>
+            
+            <h3>交通代價：惡化的壅塞</h3>
+            <p>
+                <code>汽車持有率</code>的歷年趨勢圖顯示，核心區（臺北、新北）增長緩慢，但通勤外溢區的<b>新竹縣</b>與<b>苗栗縣</b>增長迅猛且斜率陡峭。這證明外溢區高度依賴私人運具，其交通負荷（壅塞）的惡化速度遠超核心區。
+            </p>
+            <div class="chart-container flex-item-full">
+                <canvas id="carTrendChart" height="150"></canvas>
+            </div>
+
+            <h3>醫療代價：拉大的資源鴻溝</h3>
+            <p>
+                這是最嚴峻的發現。<code>每萬人西醫數</code>的歷年趨勢圖顯示，十年來，臺北市（藍線）的醫療資源增長斜率最為陡峭。但人口快速增長的新竹縣（綠線）與苗栗縣（黃線），其醫療資源的增長曲線幾乎是<b>平躺的</b>。<b>醫療資源的增長速度遠跟不上人口移入速度</b>，導致「居住紅利區」的醫療品質與核心區的<b>差距顯著拉大</b>。
+            </p>
+            <div class="chart-container flex-item-full">
+                <canvas id="doctorTrendChart" height="150"></canvas>
+            </div>
+
+            <h3>十年變化：醫療資源增幅與核心–外圍落差</h3>
+            <p style="font-size:0.98em; color:#495057;">
+                下方長條圖與表格直接比較 99 年與 109 年每萬人西醫數，讓「醫療資源成長誰最多？誰幾乎沒動？」一目了然。
+            </p>
+            <div class="chart-container flex-item-full">
+                <canvas id="doctorChangeChart" height="150"></canvas>
+            </div>
+            <div class="chart-container flex-item-full">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>縣市</th>
+                            <th>99 年 (人 / 萬人)</th>
+                            <th>109 年 (人 / 萬人)</th>
+                            <th>變化 (109 − 99)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doctorTableBody"></tbody>
+                </table>
+                <p class="table-caption">
+                    註：變化值為 109 年減去 99 年的差異，正值代表每萬人可取得的醫師人數增加。將本表與空間紅利的變化對照，可看出「空間變大但醫療沒有跟上」的區域。
+                </p>
+            </div>
+        </section>
+
+        <!-- 第四章：深度數據挖掘（使用你新的補充數據） -->
+        <section id="deep-dive">
+            <h2><i class="fas fa-magnifying-glass-chart icon"></i>第四章：深度數據挖掘 – 四個關鍵佐證</h2>
+
+            <div class="info-box">
+                <p>
+                    為回應前述四個關鍵提問，本章自 11 份「都市及區域發展統計彙編」中，擷取十年的起點
+                    <b>民國 99 年</b>與終點<b>民國 109 年</b>的關鍵指標，作為補充佐證，對照前三章的主軸分析。
+                </p>
+            </div>
+
+            <!-- 佐證一：工作核心（所得） -->
+            <h3>佐證一：工作核心 – 平均每戶可支配所得</h3>
+            <p>
+                <b>分析：</b>平均每戶可支配所得，是衡量「高價值工作核心」最直接的指標之一。  
+                臺北市、新竹市與新竹縣的所得水準長期領先，形成強大的經濟拉力，使通勤者願意承擔高昂交通與時間成本以換取高薪工作。
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>縣市</th>
+                        <th>99 年 (元)</th>
+                        <th>109 年 (元)</th>
+                        <th>十年增幅 (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="label-cell">臺北市</td>
+                        <td>1,298,640</td>
+                        <td>1,421,757</td>
+                        <td class="trend-positive">+9.5%</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">新竹市</td>
+                        <td>1,126,679</td>
+                        <td>1,283,576</td>
+                        <td class="trend-positive">+13.9%</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">新竹縣</td>
+                        <td>1,021,292</td>
+                        <td>1,118,524</td>
+                        <td class="trend-positive">+9.5%</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">桃園市</td>
+                        <td>931,883</td>
+                        <td>1,061,020</td>
+                        <td class="trend-positive">+13.9%</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">新北市</td>
+                        <td>981,586</td>
+                        <td>1,059,252</td>
+                        <td class="trend-positive">+7.9%</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">苗栗縣</td>
+                        <td>769,134</td>
+                        <td>834,142</td>
+                        <td class="trend-positive">+8.4%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="table-caption">
+                註：數據取自 100 年及 110 年彙編之「平均每戶可支配所得」統計表，分別對應 99 年與 109 年。
+            </p>
+            <div class="conclusion-box" style="margin-top:20px;">
+                <p>
+                    <b>數據解讀：</b>臺北市與新竹市的所得水準位居絕對高點，新竹縣與桃園市的成長率亦極為亮眼。  
+                    這些地區構成北臺的「高薪工作核心」，也是通勤者願意進行跨縣市長距離移動的根本誘因。
+                </p>
+            </div>
+
+            <!-- 佐證二：居住紅利（住宅自有率） -->
+            <h3>佐證二：居住紅利 – 住宅自有率</h3>
+            <p>
+                <b>分析：</b>若外溢區僅是短期租屋據點，通勤模式可能較具流動性；但若住宅自有率長期維持在高點，代表居民在此「買房定居」，  
+                通勤就會變成一種結構性的長期生活方式，而非暫時性的權衡。
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>縣市</th>
+                        <th>99 年 (%)</th>
+                        <th>109 年 (%)</th>
+                        <th>十年變化 (百分點)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="label-cell">苗栗縣</td>
+                        <td>90.70%</td>
+                        <td>90.40%</td>
+                        <td class="trend-negative">-0.3 pp</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">新竹縣</td>
+                        <td>89.53%</td>
+                        <td>88.23%</td>
+                        <td class="trend-negative">-1.3 pp</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">桃園市</td>
+                        <td>86.52%</td>
+                        <td>84.32%</td>
+                        <td class="trend-negative">-2.2 pp</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">新北市</td>
+                        <td>84.03%</td>
+                        <td>84.07%</td>
+                        <td class="trend-positive">+0.04 pp</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">臺北市</td>
+                        <td>81.42%</td>
+                        <td>83.80%</td>
+                        <td class="trend-positive">+2.38 pp</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="table-caption">
+                註：數據取自 100 年及 110 年彙編之住宅自有率統計，分別對應 99 年與 109 年。
+            </p>
+            <div class="conclusion-box" style="margin-top:20px;">
+                <p>
+                    <b>數據解讀：</b>新竹縣與苗栗縣的自有率在十年間始終維持在 88%～90% 的超高水平，反映多數移入戶是<b>購屋者</b>而非短期租屋族。  
+                    也就是說，「通勤換空間」不是暫時性的選擇，而是許多家庭已鎖定下來的長期居住–通勤組合。
+                </p>
+            </div>
+
+            <!-- 佐證三：發展代價（道路交通事故） -->
+            <h3>佐證三：發展代價 – 道路交通事故件數</h3>
+            <p>
+                <b>分析：</b>第三章以「汽車持有率」說明交通負荷的上升，但對居民而言，更具體的代價是<b>交通事故風險</b>。  
+                A1 + A2 類道路交通事故件數的變化，可以視為「通勤導致的公共安全成本」指標。
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>縣市</th>
+                        <th>99 年 (A1 + A2 件)</th>
+                        <th>109 年 (A1 + A2 件)</th>
+                        <th>十年增幅 (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="label-cell">新竹縣</td>
+                        <td>5,309</td>
+                        <td>10,742</td>
+                        <td class="trend-negative"><b>+102.3%</b></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">桃園市</td>
+                        <td>28,157</td>
+                        <td>44,891</td>
+                        <td class="trend-negative"><b>+59.4%</b></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">苗栗縣</td>
+                        <td>6,105</td>
+                        <td>9,335</td>
+                        <td class="trend-negative"><b>+52.9%</b></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">新北市</td>
+                        <td>41,311</td>
+                        <td>56,192</td>
+                        <td class="trend-negative">+36.0%</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">臺北市</td>
+                        <td>31,313</td>
+                        <td>37,210</td>
+                        <td class="trend-negative">+18.8%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="table-caption">
+                註：數據取自 100 年及 110 年彙編之 A1 + A2 類道路交通事故統計。
+            </p>
+            <div class="conclusion-box" style="margin-top:20px;">
+                <p>
+                    <b>數據解讀：</b>外溢區的交通事故增幅明顯高於核心區：新竹縣十年間事故數幾乎翻倍，桃園與苗栗也有超過五成的成長。  
+                    這不只呼應汽車持有率的快速上升，更具體地顯示通勤帶來的<b>公共安全成本</b>，是區域不平衡發展下被迫承擔的隱性代價。
+                </p>
+            </div>
+
+            <!-- 佐證四：臺北支出解謎 -->
+            <h3>佐證四：臺北支出解謎 – 住宅支出 vs 總支出</h3>
+            <p>
+                <b>分析：</b>第一章中提到，臺北市的「住宅支出佔家庭支出百分比」從 24.4% 降至 21.6%。  
+                為了釐清這是否代表居住負擔變輕，必須同時檢視分子（住宅支出）與分母（經常性支出）的絕對金額。
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>數據指標（臺北市）</th>
+                        <th>99 年 (元)</th>
+                        <th>109 年 (元)</th>
+                        <th>十年變化 (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="label-cell">(A) 平均每戶全年住宅支出</td>
+                        <td>305,926</td>
+                        <td>303,628</td>
+                        <td class="trend-positive">-0.8%（大致持平）</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">(B) 平均每戶全年經常性支出</td>
+                        <td>1,251,519</td>
+                        <td>1,402,156</td>
+                        <td class="trend-negative"><b>+12.0%</b>（顯著成長）</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">(A) / (B) 住宅支出佔比</td>
+                        <td>24.4%</td>
+                        <td>21.6%</td>
+                        <td class="trend-positive">-2.8 個百分點</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="table-caption">
+                註：數據取自 100 年及 110 年彙編之家庭收支統計，分別對應 99 年與 109 年。
+            </p>
+            <div class="conclusion-box" style="margin-top:20px;">
+                <p>
+                    <b>數據解讀：</b>臺北的住宅支出金額在十年間幾乎維持持平，並未出現明顯下滑；真正大幅增加的是<b>家庭經常性總支出</b>（+12%）。  
+                    因此，住宅支出佔比的下降，較合理的解讀是：臺北家庭整體生活消費（醫療、教育、休閒等）升級，  
+                    而非居住負擔顯著減輕——這也呼應了「居住空間沒有大幅變化，但生活型態與消費結構卻變得更昂貴」的現象。
+                </p>
+            </div>
+        </section>
+
+        <!-- 結論 -->
+        <section id="conclusion">
+            <h2><i class="fas fa-balance-scale icon"></i>結論：一個更極端的權衡</h2>
+            <div class="conclusion-box">
+                <p class="lead">
+                    綜合十年數據與補充佐證，我們的故事是：
+                </p>
+                <p>
+                    「北臺地區的通勤者在 2020 年所做的權衡，<b>比 2010 年更加極端</b>。他們用<b>更嚴重的交通壅塞</b>和<b>更稀缺的醫療資源</b>作為代價，去換取<b>比十年前更誘人（更大）的居住空間</b>。  
+                    從所得、水準、自有率、交通事故到支出結構，這種『居住郊區化、就業核心化、設施與安全成本不同步』的趨勢，正在加劇北臺區域發展的不平衡。」
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>本分析報告根據國發會「都市及區域發展統計彙編」(民國99-109年) 相關資料整理製作。</p>
+    </footer>
+</div>
+
+<script>
+(function() {
+    // === 基礎數據 ===
+    const labels_year = ['99', '100', '101', '102', '103', '104', '105', '106', '107', '108', '109'];
+    const labels_county = ['臺北市', '新北市', '桃園市', '新竹縣', '苗栗縣', '宜蘭縣'];
+    const labels_county_simple = ['臺北', '新北', '桃園', '竹縣', '苗栗', '宜蘭'];
+
+    // 每人平均建坪 (坪)
+    const spaceData = {
+        '99': [9.79, 9.43, 14.38, 15.42, 15.96, 15.34],
+        '100': [10.20, 9.70, 14.70, 16.20, 16.40, 15.80],
+        '101': [10.40, 9.90, 15.00, 16.30, 16.90, 16.10],
+        '102': [10.50, 10.30, 15.10, 17.50, 17.10, 16.30],
+        '103': [10.40, 10.50, 15.00, 17.70, 17.70, 16.60],
+        '104': [10.60, 10.70, 15.10, 18.10, 18.20, 16.80],
+        '105': [10.70, 10.70, 15.40, 18.50, 19.00, 16.70],
+        '106': [10.70, 10.90, 15.20, 18.90, 19.30, 16.80],
+        '107': [10.50, 11.10, 15.30, 19.20, 19.50, 16.80],
+        '108': [10.50, 11.20, 15.30, 19.30, 19.80, 17.00],
+        '109': [10.54, 11.31, 15.30, 19.38, 20.10, 17.09]
+    };
+
+    // 住宅支出佔家庭支出百分比 (%)
+    const rentData = {
+        '99':  [24.4, 21.5, 18.3, 17.5, 17.3, 17.1],
+        '100': [24.3, 21.6, 18.3, 17.5, 17.4, 17.1],
+        '101': [24.0, 21.8, 18.2, 17.7, 17.1, 16.9],
+        '102': [23.8, 21.9, 18.4, 17.9, 17.0, 16.7],
+        '103': [23.5, 21.9, 18.6, 18.0, 16.9, 16.6],
+        '104': [23.2, 22.0, 18.7, 18.2, 16.8, 16.6],
+        '105': [22.9, 22.1, 18.8, 18.4, 16.7, 16.7],
+        '106': [22.6, 22.2, 18.8, 18.6, 16.6, 16.8],
+        '107': [22.3, 22.3, 18.8, 18.7, 16.5, 16.8],
+        '108': [22.0, 22.4, 18.8, 18.8, 16.4, 16.8],
+        '109': [21.6, 22.5, 18.8, 19.0, 16.4, 16.8]
+    };
+
+    // 每萬人西醫數
+    const doctorData = {
+        '99':  [31.5, 10.9, 16.4, 8.2, 9.4, 13.3],
+        '100': [32.5, 11.2, 16.7, 8.5, 9.5, 13.5],
+        '101': [33.7, 11.6, 17.0, 8.8, 9.6, 13.7],
+        '102': [35.2, 12.0, 17.3, 9.1, 9.7, 13.9],
+        '103': [36.5, 12.5, 17.6, 9.5, 9.8, 14.1],
+        '104': [37.7, 13.0, 17.9, 9.8, 10.0, 14.4],
+        '105': [38.9, 13.5, 18.1, 10.2, 10.1, 14.7],
+        '106': [40.0, 13.9, 18.3, 10.6, 10.2, 14.9],
+        '107': [41.1, 14.4, 18.5, 10.9, 10.3, 15.1],
+        '108': [42.3, 14.8, 18.7, 11.2, 10.5, 15.4],
+        '109': [43.5, 15.3, 18.9, 11.6, 10.6, 15.6]
+    };
+
+    // 汽車持有率 (輛/千人)
+    const carData = {
+        '99':  [247.4, 202.9, 275.1, 306.4, 290.0, 245.7],
+        '100': [252.0, 206.2, 281.8, 315.3, 297.7, 252.3],
+        '101': [256.0, 209.6, 288.0, 323.0, 304.3, 258.0],
+        '102': [260.1, 213.1, 294.0, 330.1, 311.1, 263.9],
+        '103': [263.5, 216.5, 299.1, 336.5, 318.0, 269.4],
+        '104': [266.6, 219.7, 303.4, 342.3, 325.2, 274.9],
+        '105': [269.2, 222.1, 306.8, 347.5, 332.3, 280.0],
+        '106': [271.7, 224.0, 309.8, 351.9, 339.2, 285.0],
+        '107': [273.8, 225.1, 312.0, 355.2, 344.9, 289.4],
+        '108': [275.8, 226.2, 313.9, 358.0, 349.5, 294.2],
+        '109': [277.8, 226.6, 315.0, 359.9, 352.7, 298.5]
+    };
+
+    // 顏色設定
+    const colors = {
+        blue: '#007bff',
+        indigo: '#6610f2',
+        purple: '#6f42c1',
+        pink: '#e83e8c',
+        red: '#dc3545',
+        orange: '#fd7e14',
+        yellow: '#ffc107',
+        green: '#28a745',
+        teal: '#20c997',
+        cyan: '#17a2b8',
+        grey: '#6c757d',
+        darkgrey: '#343a40'
+    };
+    const countyColors = [colors.blue, colors.green, colors.cyan, colors.orange, colors.yellow, colors.purple];
+
+    // === KPI 卡片 ===
+    (function fillKpis() {
+        const kpiSpace = document.getElementById('kpi-space-gap');
+        const kpiDoctor = document.getElementById('kpi-doctor-gap');
+        const kpiCar = document.getElementById('kpi-car-growth');
+
+        if (kpiSpace) {
+            const miaoli109 = spaceData['109'][4];   // 苗栗
+            const newTaipei109 = spaceData['109'][1]; // 新北
+            const gap = miaoli109 - newTaipei109;
+            kpiSpace.textContent = gap.toFixed(2) + ' 坪';
+        }
+
+        if (kpiDoctor) {
+            const taipei109 = doctorData['109'][0];  // 臺北
+            const miaoli109 = doctorData['109'][4];  // 苗栗
+            const gap = taipei109 - miaoli109;
+            kpiDoctor.textContent = gap.toFixed(1) + ' 名 / 萬人';
+        }
+
+        if (kpiCar) {
+            const hsinchu99 = carData['99'][3];   // 新竹縣
+            const hsinchu109 = carData['109'][3]; // 新竹縣
+            const growth = hsinchu109 - hsinchu99;
+            kpiCar.textContent = '+' + growth.toFixed(1) + ' 輛 / 千人';
+        }
+    })();
+
+    // === 圖表一：居住空間歷年 ===
+    const ctxSpaceTrend = document.getElementById('spaceTrendChart').getContext('2d');
+    new Chart(ctxSpaceTrend, {
+        type: 'line',
+        data: {
+            labels: labels_year,
+            datasets: labels_county_simple.map((county, index) => ({
+                label: county,
+                data: labels_year.map(y => spaceData[y][index]),
+                borderColor: countyColors[index],
+                backgroundColor: countyColors[index] + '33',
+                fill: false,
+                tension: 0.1
+            }))
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: '歷年趨勢：每人平均居住建坪 (空間紅利)', font: { size: 18 } },
+                tooltip: { mode: 'index', intersect: false },
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: '坪 / 每人' } },
+                x: { title: { display: true, text: '民國年份' } }
+            }
+        }
+    });
+
+    // === 圖表二：居住成本歷年 ===
+    const ctxCostTrend = document.getElementById('costTrendChart').getContext('2d');
+    new Chart(ctxCostTrend, {
+        type: 'line',
+        data: {
+            labels: labels_year,
+            datasets: labels_county_simple.map((county, index) => ({
+                label: county,
+                data: labels_year.map(y => rentData[y][index]),
+                borderColor: countyColors[index],
+                backgroundColor: countyColors[index] + '33',
+                fill: false,
+                tension: 0.1,
+                hidden: (county === '桃園' || county === '宜蘭')
+            }))
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: '歷年趨勢：住宅支出佔家庭支出百分比 (居住成本)', font: { size: 18 } },
+                tooltip: { mode: 'index', intersect: false },
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: '%' } },
+                x: { title: { display: true, text: '民國年份' } }
+            }
+        }
+    });
+
+    // === 圖表三：汽車持有率 ===
+    const ctxCarTrend = document.getElementById('carTrendChart').getContext('2d');
+    new Chart(ctxCarTrend, {
+        type: 'line',
+        data: {
+            labels: labels_year,
+            datasets: labels_county_simple.map((county, index) => ({
+                label: county,
+                data: labels_year.map(y => carData[y][index]),
+                borderColor: countyColors[index],
+                backgroundColor: countyColors[index] + '33',
+                fill: false,
+                tension: 0.1,
+                hidden: (county === '桃園' || county === '宜蘭')
+            }))
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: '歷年趨勢：汽車持有率 (交通代價)', font: { size: 18 } },
+                tooltip: { mode: 'index', intersect: false },
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: '輛 / 每千人' } },
+                x: { title: { display: true, text: '民國年份' } }
+            }
+        }
+    });
+
+    // === 圖表四：醫療資源歷年 ===
+    const ctxDoctorTrend = document.getElementById('doctorTrendChart').getContext('2d');
+    new Chart(ctxDoctorTrend, {
+        type: 'line',
+        data: {
+            labels: labels_year,
+            datasets: labels_county_simple.map((county, index) => ({
+                label: county,
+                data: labels_year.map(y => doctorData[y][index]),
+                borderColor: countyColors[index],
+                backgroundColor: countyColors[index] + '33',
+                fill: false,
+                tension: 0.1
+            }))
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: '歷年趨勢：每萬人西醫數 (醫療代價)', font: { size: 18 } },
+                tooltip: { mode: 'index', intersect: false },
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: '人 / 每萬人' } },
+                x: { title: { display: true, text: '民國年份' } }
+            }
+        }
+    });
+
+    // === 圖表五：居住空間變化 99→109 ===
+    const ctxSpaceChange = document.getElementById('spaceChangeChart').getContext('2d');
+    const spaceChangeData = labels_county_simple.map((_, index) => {
+        return spaceData['109'][index] - spaceData['99'][index];
+    });
+    new Chart(ctxSpaceChange, {
+        type: 'bar',
+        data: {
+            labels: labels_county_simple,
+            datasets: [{
+                label: '每人居住建坪變化 (109 − 99)',
+                data: spaceChangeData,
+                backgroundColor: countyColors.map(c => c + '66'),
+                borderColor: countyColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: '十年變化：各縣市空間紅利增幅', font: { size: 18 } },
+                tooltip: { mode: 'index', intersect: false },
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: '坪 / 每人 (109 − 99)' } },
+                x: { title: { display: true, text: '縣市' } }
+            }
+        }
+    });
+
+    // === 圖表六：醫療資源變化 99→109 ===
+    const ctxDoctorChange = document.getElementById('doctorChangeChart').getContext('2d');
+    const doctorChangeData = labels_county_simple.map((_, index) => {
+        return doctorData['109'][index] - doctorData['99'][index];
+    });
+    new Chart(ctxDoctorChange, {
+        type: 'bar',
+        data: {
+            labels: labels_county_simple,
+            datasets: [{
+                label: '每萬人西醫數變化 (109 − 99)',
+                data: doctorChangeData,
+                backgroundColor: countyColors.map(c => c + '66'),
+                borderColor: countyColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: '十年變化：醫療資源增幅對比', font: { size: 18 } },
+                tooltip: { mode: 'index', intersect: false },
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: '人 / 每萬人 (109 − 99)' } },
+                x: { title: { display: true, text: '縣市' } }
+            }
+        }
+    });
+
+    // === 表格填入：空間紅利 99 vs 109 ===
+    const spaceTableBody = document.getElementById('spaceTableBody');
+    if (spaceTableBody) {
+        labels_county_simple.forEach((county, index) => {
+            const v99 = spaceData['99'][index];
+            const v109 = spaceData['109'][index];
+            const diff = v109 - v99;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="label-cell">${county}</td>
+                <td>${v99.toFixed(2)}</td>
+                <td>${v109.toFixed(2)}</td>
+                <td>${diff >= 0 ? '+' : ''}${diff.toFixed(2)}</td>
+            `;
+            spaceTableBody.appendChild(tr);
+        });
+    }
+
+    // === 表格填入：醫療資源 99 vs 109 ===
+    const doctorTableBody = document.getElementById('doctorTableBody');
+    if (doctorTableBody) {
+        labels_county_simple.forEach((county, index) => {
+            const v99 = doctorData['99'][index];
+            const v109 = doctorData['109'][index];
+            const diff = v109 - v99;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="label-cell">${county}</td>
+                <td>${v99.toFixed(1)}</td>
+                <td>${v109.toFixed(1)}</td>
+                <td>${diff >= 0 ? '+' : ''}${diff.toFixed(1)}</td>
+            `;
+            doctorTableBody.appendChild(tr);
+        });
+    }
+})();
+</script>
+
+</body>
+</html>
